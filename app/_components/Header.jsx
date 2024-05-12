@@ -1,6 +1,9 @@
+"use client"
 import React from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { LoginLink, RegisterLink } from '@kinde-oss/kinde-auth-nextjs'
+
 
 function Header() {
   return (
@@ -16,8 +19,8 @@ function Header() {
                 <li className='hover:text-primary transition-all duratio-300 cursor-pointer'>About Us</li>
             </ul>
             <div className='flex gap-5'>
-                <Button variant="ghost">Login</Button>
-                <Button>Get Started</Button>
+                <LoginLink><Button variant="ghost">Login</Button></LoginLink>
+                <RegisterLink><Button>Get Started</Button></RegisterLink>
             </div>
         </div>
     </div>
