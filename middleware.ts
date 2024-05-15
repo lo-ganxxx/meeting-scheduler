@@ -12,5 +12,5 @@ export async function middleware(request) {
  
 // See "Matching Paths" below to learn more
 export const config = { //paths to prevent access from unauthorized users
-  matcher: '/dashboard/:path*',
+  matcher: ['/dashboard/:path*', '/create-business'],
 }
