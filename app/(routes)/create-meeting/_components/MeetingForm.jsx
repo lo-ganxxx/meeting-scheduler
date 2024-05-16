@@ -1,0 +1,86 @@
+"use client"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { ChevronLeft } from 'lucide-react'
+import React, { useState } from 'react'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+  } from "@/components/ui/dropdown-menu"
+import LocationOption from '@/app/_utils/LocationOption'
+import Image from 'next/image'
+import Link from 'next/link'
+import ThemeOptions from '@/app/_utils/ThemeOptions'
+  
+
+function MeetingForm() {
+
+    const [location, setLocation]=useState()
+    const [themeColour, setThemeColour]=useState()
+
+  return (
+    <div className='p-8'>
+        <Link href={'/dashboard'}>
+            <h2 className='flex gap-2'><ChevronLeft/>Cancel</h2>
+        </Link>
+        <div className='mt-4'>
+            <h2 className='font-bold text-2xl my-4'>Create New Event</h2>
+            <hr></hr>
+        </div>
+        <div className='flex flex-col gap-3 my-4'>
+            <h2 className='font-bold'>Event Name*</h2>
+            <Input placeholder="The name of your meeting" />
+
+            <h2 className='font-bold'>Duration*</h2>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant='outline' className='mx-w-40'>30 Min</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem>15 Min</DropdownMenuItem>
+                    <DropdownMenuItem>30 Min</DropdownMenuItem>
+                    <DropdownMenuItem>45 Min</DropdownMenuItem>
+                    <DropdownMenuItem>60 Min</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <h2 className='font-bold'>Location*</h2>
+            <div className='grid grid-cols-4 gap-3'>
+                {LocationOption.map((option, index)=>( //map out and render in chosen manner each option from the imported LocationOption list
+                    <div className={`border flex flex-col justify-center
+                    items-center p-3 rounded-lg cursor-pointer
+                    hover:bg-blue-50 hover:border-primary
+                    ${location==option.name&&'bg-blue-100 border-primary'}`} //render this way if current location selected is this components location
+                    onClick={()=>setLocation(option.name)}>
+                        <Image src={option.icon} width={30} height={30} alt={option.name}/>
+                        <h2>{option.name}</h2>
+                    </div>
+                ))}
+            </div>
+            {/* Only display Add Url input if a location of meeting is set */}
+            {location&&<>
+                <h2 className='font-bold'>Add {location} Url</h2>
+                <Input placeholder="The link to your meeting" />
+            </>}
+            <h2 className='font-bold'>Select Theme Colour</h2>
+            <div className='flex justify-evenly'>
+                {ThemeOptions.map((colour, index)=>(
+                    <div className={`h-8 w-8 rounded-full
+                    ${themeColour==colour&&'border-4 border-black'}`}
+                    style={{backgroundColor:colour}}
+                    onClick={()=>setThemeColour(colour)}> {/* the ()=> makes the setState as a function so it only triggers on the click (onClick is supposed to trigger a function) https://stackoverflow.com/questions/74266096/why-cant-we-directly-use-setstate-on-onclick */}
+                    </div>
+                ))}
+            </div>
+        </div>
+
+        <Button className='w-full mt-3'>Create</Button>
+    </div>
+  )
+}
+
+export default MeetingForm
