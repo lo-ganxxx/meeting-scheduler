@@ -66,7 +66,7 @@ function MeetingForm({setFormValue}) { //passes form value back to parent compon
             <h2 className='font-bold'>Location*</h2>
             <div className='grid grid-cols-4 gap-3'>
                 {LocationOption.map((option, index)=>( //map out and render in chosen manner each option from the imported LocationOption list
-                    <div className={`border flex flex-col justify-center
+                    <div key={index} className={`border flex flex-col justify-center
                     items-center p-3 rounded-lg cursor-pointer
                     hover:bg-blue-50 hover:border-primary
                     ${locationType==option.name&&'bg-blue-100 border-primary'}`} //render this way if current location selected is this components location
@@ -86,7 +86,7 @@ function MeetingForm({setFormValue}) { //passes form value back to parent compon
             <h2 className='font-bold'>Select Theme Colour</h2>
             <div className='flex justify-evenly'>
                 {ThemeOptions.map((colour, index)=>(
-                    <div className={`h-8 w-8 rounded-full
+                    <div key={index} className={`h-8 w-8 rounded-full
                     ${themeColour==colour&&'border-4 border-black'}`}
                     style={{backgroundColor:colour}}
                     onClick={()=>setThemeColour(colour)}> {/* the ()=> makes the setState as a function so it only triggers on the click (onClick is supposed to trigger a function) https://stackoverflow.com/questions/74266096/why-cant-we-directly-use-setstate-on-onclick */}
