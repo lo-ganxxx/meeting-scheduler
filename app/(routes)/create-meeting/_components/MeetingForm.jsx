@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ChevronLeft } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -17,10 +17,23 @@ import Link from 'next/link'
 import ThemeOptions from '@/app/_utils/ThemeOptions'
   
 
-function MeetingForm() {
+function MeetingForm({setFormValue}) { //passes form value back to parent component (page.jsx)
 
-    const [location, setLocation]=useState()
     const [themeColour, setThemeColour]=useState()
+    const [eventName, setEventName]=useState()
+    const [duration, setDuration]=useState(30)
+    const [locationType, setLocationType]=useState()
+    const [locationUrl, setLocationUrl]=useState()
+
+    useEffect(()=>{
+        setFormValue({ //calls the parent components passed down function of "setFormValue" with the form values as the argument
+            eventName:eventName,
+            duration:duration,
+            locationType:locationType,
+            locationUrl:locationUrl,
+            themeColour:themeColour
+        })
+    }, [eventName, duration, locationType, locationUrl, themeColour])
 
   return (
     <div className='p-8'>
@@ -33,18 +46,20 @@ function MeetingForm() {
         </div>
         <div className='flex flex-col gap-3 my-4'>
             <h2 className='font-bold'>Event Name*</h2>
-            <Input placeholder="The name of your meeting" />
+            <Input placeholder="The name of your meeting"
+            onChange={(event)=>setEventName(event.target.value)} //when event name input is changed update the event name state -> note: onChange is similar to onClick but for input fields
+            />
 
             <h2 className='font-bold'>Duration*</h2>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant='outline' className='mx-w-40'>30 Min</Button>
+                    <Button variant='outline' className='mx-w-40'>{duration} Min</Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuItem>15 Min</DropdownMenuItem>
-                    <DropdownMenuItem>30 Min</DropdownMenuItem>
-                    <DropdownMenuItem>45 Min</DropdownMenuItem>
-                    <DropdownMenuItem>60 Min</DropdownMenuItem>
+                    <DropdownMenuItem onClick={()=>setDuration(15)}>15 Min</DropdownMenuItem>
+                    <DropdownMenuItem onClick={()=>setDuration(30)}>30 Min</DropdownMenuItem>
+                    <DropdownMenuItem onClick={()=>setDuration(45)}>45 Min</DropdownMenuItem>
+                    <DropdownMenuItem onClick={()=>setDuration(60)}>60 Min</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
@@ -54,17 +69,19 @@ function MeetingForm() {
                     <div className={`border flex flex-col justify-center
                     items-center p-3 rounded-lg cursor-pointer
                     hover:bg-blue-50 hover:border-primary
-                    ${location==option.name&&'bg-blue-100 border-primary'}`} //render this way if current location selected is this components location
-                    onClick={()=>setLocation(option.name)}>
+                    ${locationType==option.name&&'bg-blue-100 border-primary'}`} //render this way if current location selected is this components location
+                    onClick={()=>setLocationType(option.name)}>
                         <Image src={option.icon} width={30} height={30} alt={option.name}/>
                         <h2>{option.name}</h2>
                     </div>
                 ))}
             </div>
             {/* Only display Add Url input if a location of meeting is set */}
-            {location&&<>
-                <h2 className='font-bold'>Add {location} Url</h2>
-                <Input placeholder="The link to your meeting" />
+            {locationType&&<>
+                <h2 className='font-bold'>Add {locationType} Url*</h2>
+                <Input placeholder="The link to your meeting"
+                onChange={(event)=>setLocationUrl(event.target.value)} //note: event.target.value is the text typed into the input box by user
+                />
             </>}
             <h2 className='font-bold'>Select Theme Colour</h2>
             <div className='flex justify-evenly'>
@@ -78,7 +95,11 @@ function MeetingForm() {
             </div>
         </div>
 
-        <Button className='w-full mt-3'>Create</Button>
+        <Button className='w-full mt-3'
+        //create button is disabled if any of the required fields have not been filled -> note: || is an or operator
+        disabled={!eventName||!duration||!locationType||!locationUrl}>
+            Create
+        </Button>
     </div>
   )
 }
