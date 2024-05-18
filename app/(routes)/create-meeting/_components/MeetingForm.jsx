@@ -15,6 +15,11 @@ import LocationOption from '@/app/_utils/LocationOption'
 import Image from 'next/image'
 import Link from 'next/link'
 import ThemeOptions from '@/app/_utils/ThemeOptions'
+import { doc, getFirestore, setDoc } from 'firebase/firestore'
+import { app } from '@/config/FirebaseConfig'
+import { useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
   
 
 function MeetingForm({setFormValue}) { //passes form value back to parent component (page.jsx)
@@ -25,6 +30,10 @@ function MeetingForm({setFormValue}) { //passes form value back to parent compon
     const [locationType, setLocationType]=useState()
     const [locationUrl, setLocationUrl]=useState()
 
+    const {user}=useKindeBrowserClient()
+    const db=getFirestore(app)
+    const router=useRouter()
+
     useEffect(()=>{
         setFormValue({ //calls the parent components passed down function of "setFormValue" with the form values as the argument
             eventName:eventName,
@@ -34,6 +43,23 @@ function MeetingForm({setFormValue}) { //passes form value back to parent compon
             themeColour:themeColour
         })
     }, [eventName, duration, locationType, locationUrl, themeColour])
+
+    const onCreateClick=async()=>{
+        const id=Date.now().toString() //uses time of creation as id
+        await setDoc(doc(db, "MeetingEvent", id), {
+            id:id,
+            eventName:eventName,
+            duration:duration,
+            locationType:locationType,
+            locationUrl:locationUrl,
+            themeColour:themeColour, //need to fix - error if no theme colour chosen
+            businessId:doc(db, 'Business',user?.email), //makes a reference to the users business model
+            createdBy:user?.email //so can quickly fetch all of a users meetings from their user object
+        }).then(resp=>{
+            toast('New meeting event created!')
+            router.replace('/dashboard/meeting-type') //redirect to meeting type page
+        })
+    }
 
   return (
     <div className='p-8'>
@@ -97,7 +123,9 @@ function MeetingForm({setFormValue}) { //passes form value back to parent compon
 
         <Button className='w-full mt-3'
         //create button is disabled if any of the required fields have not been filled -> note: || is an or operator
-        disabled={!eventName||!duration||!locationType||!locationUrl}>
+        disabled={!eventName||!duration||!locationType||!locationUrl}
+        onClick={()=>onCreateClick()}
+        >
             Create
         </Button>
     </div>
