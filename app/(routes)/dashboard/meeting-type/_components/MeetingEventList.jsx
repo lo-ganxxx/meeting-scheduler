@@ -65,6 +65,7 @@ function MeetingEventList() {
                             <DropdownMenuItem className='flex gap-2'><Pen/> Edit</DropdownMenuItem>
                             <DropdownMenuItem className='flex gap-2'
                             onClick={()=>onDeleteMeetingEvent(event)}><Trash/> Delete</DropdownMenuItem>
+                            {/* add confirm delete button to avoid accidental deletes? improves user experience */}
                         </DropdownMenuContent>
                     </DropdownMenu>
 
