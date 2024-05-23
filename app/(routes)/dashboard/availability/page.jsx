@@ -54,7 +54,7 @@ function Availability() {
         setEndTime(result.endTime)
     }
 
-    const onHandleChange=(day, checked)=>{
+    const onHandleChange=(day, checked)=>{ //Called when a day available checkbox is checked/unchecked
         setDaysAvailable({
             ...daysAvailable, //the current items in the dictionary (in seperated form)
             [day]:checked //appending the newly checked/unchecked day to the dictionary
@@ -62,10 +62,10 @@ function Availability() {
         console.log(daysAvailable)
     }
 
-    const handleSave=async()=>{
+    const handleSave=async()=>{ //Save availability data to database
         const docRef = doc(db, "Business", user?.email)
 
-        //Set the specified fields of the Business under the name of the user's email
+        //Set the specified fields in the Business subcollection under the name of the user's email (in database)
         await updateDoc(docRef, {
             daysAvailable:daysAvailable,
             startTime:startTime,

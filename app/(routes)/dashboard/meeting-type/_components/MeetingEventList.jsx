@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { app } from '@/config/FirebaseConfig'
 import { useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs'
-import { collection, deleteDoc, doc, getDocs, getFirestore, orderBy, query, where } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, orderBy, query, where } from 'firebase/firestore'
 import { Clock, Copy, MapPin, Pen, Settings, Trash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -20,11 +20,19 @@ function MeetingEventList() {
     const db=getFirestore(app)
     const {user}=useKindeBrowserClient()
 
+    const [businessInfo, setBusinessInfo] = useState()
     const [eventList, setEventList]=useState([])
 
     useEffect(()=>{
-        user&&getEventList()
+        user&&getEventList() //once user object is retrieved, get the meeting events list from db
+        user&&getBusinessInfo()
     }, [user])
+
+    const getBusinessInfo=async()=>{
+        const docRef=doc(db, "Business", user.email)
+        const docSnap=await getDoc(docRef)
+        setBusinessInfo(docSnap.data())
+    }
 
     const getEventList=async()=>{ //get list of users meeting events from database
         setEventList([])
@@ -44,6 +52,12 @@ function MeetingEventList() {
             toast('Meeting event deleted')
             getEventList() //update the list of meeting events
         })
+    }
+
+    const onCopyClick=(event)=>{
+        const meetingEventUrl=process.env.NEXT_PUBLIC_BASE_URL+'/'+businessInfo.businessName+'/'+event.id
+        navigator.clipboard.writeText(meetingEventUrl) //Copies to the users clipboard
+        toast('Link copied to clipboard')
     }
 
     return (
@@ -78,8 +92,7 @@ function MeetingEventList() {
                 <div className='flex justify-between'>
                     <h2 className='flex gap-2 text-primary text-sm items-center cursor-pointer'
                     onClick={()=>{
-                        navigator.clipboard.writeText(event.locationUrl) //Copies to the users clipboard
-                        toast('Link copied to clipboard')
+                        onCopyClick(event)
                     }}
                     >
                         <Copy className='h-4 w-4'/>Copy Link</h2>
