@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import React from 'react'
 
-function TimeDateSelection({date, handleDateChange, timeSlots, setSelectedTime, enabledTimeSlot}) {
+function TimeDateSelection({date, handleDateChange, timeSlots, setSelectedTime, enabledTimeSlot, selectedTime}) {
   return (
     <div className='md:col-span-2 flex px-4'>
                 <div className='flex flex-col'>
@@ -23,7 +23,9 @@ function TimeDateSelection({date, handleDateChange, timeSlots, setSelectedTime, 
                         disabled={!enabledTimeSlot}
                         onClick={()=>setSelectedTime(time)}
                         key={index}
-                        className='border-primary text-primary'
+                        className={`border-primary text-primary
+                        ${time==selectedTime&&'bg-primary text-white'}
+                        `}
                         variant='outline'>{time}</Button>
                     ))}
                 </div>

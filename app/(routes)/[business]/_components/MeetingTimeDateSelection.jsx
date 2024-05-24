@@ -6,16 +6,25 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import TimeDateSelection from './TimeDateSelection'
 import UserFormInfo from './UserFormInfo'
+import { doc, getFirestore, setDoc } from 'firebase/firestore'
+import { app } from '@/config/FirebaseConfig'
+import { toast } from 'sonner'
 
 function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
 
   //possibly store this code somewhere so that it can be used on actual page + preview page without repeating? there are only small differences.
 
-  const [date,setDate]=useState(new Date())
+  const [date, setDate]=useState(new Date())
   const [timeSlots, setTimeSlots]=useState()
   const [enabledTimeSlot, setEnabledTimeSlot]=useState(false)
   const [selectedTime, setSelectedTime]=useState()
   const [step, setStep]=useState(1)
+
+  const [userName, setUserName]=useState()
+  const [userEmail, setUserEmail]=useState()
+  const [userNote, setUserNote]=useState('')
+
+  const db=getFirestore(app)
 
   useEffect(()=>{
     meetingEventInfo?.duration&&createTimeSlot(meetingEventInfo?.duration) //returns available time slots for given duration
@@ -39,15 +48,53 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
   }
 
   const handleDateChange=(date)=>{
-    setDate(date)
-    const day=format(date, 'EEEE') //using date-fns to format the date to just day in Monday, Tuesday, etc. formatting
-    if(businessInfo?.daysAvailable?.[day]) //returns true or false
-    {
-        setEnabledTimeSlot(true)
+    console.log(date) //causes major error if you unselect a date as it causes date to become undefine -- cannot format undefined date
+    if(date) { //only run if the date is defined
+        setDate(date)
+        const day=format(date, 'EEEE') //using date-fns to format the date to just day in Monday, Tuesday, etc. formatting
+        if(businessInfo?.daysAvailable?.[day]) { //returns true or false
+            setEnabledTimeSlot(true)
+        }
+        else {
+            setEnabledTimeSlot(false)
+        }
     }
-    else {
-        setEnabledTimeSlot(false)
+    // setDate(date)
+    // const day=format(date, 'EEEE') //using date-fns to format the date to just day in Monday, Tuesday, etc. formatting
+    // if(businessInfo?.daysAvailable?.[day]) //returns true or false
+    // {
+    //     setEnabledTimeSlot(true)
+    // }
+    // else {
+    //     setEnabledTimeSlot(false)
+    // }
+  }
+
+  const handleScheduleEvent=async()=>{
+    const regex = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/ //regex expression for an email address
+    if(regex.test(userEmail)==false) {
+        toast("Please enter a valid email address")
+        return //return nothing
     }
+
+    const docId=Date.now().toString()
+    
+    await setDoc(doc(db, "ScheduledMeeting", docId), {
+        businessName:businessInfo.businessName,
+        businessEmail:businessInfo.email,
+        selectedTime:selectedTime,
+        selectedDate:date, //improvement to be made -- as date already stores time at 00:00:00, find a way to edit this date to have the selected time, rather than have it seperate!
+        duration:meetingEventInfo.duration,
+        locationUrl:meetingEventInfo.locationUrl,
+        eventId:meetingEventInfo.id,
+        id:docId,
+        userName:userName,
+        userEmail:userEmail,
+        userNote:userNote
+    }).then(resp=>{
+        toast("Meeting scheduled successfully!")
+    })
+
   }
 
   return (
@@ -77,20 +124,30 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
                 </div>
             </div>
             {/* Time & Date Selection */}
-            {step==1?<TimeDateSelection
+            {step==1?<TimeDateSelection //display if on step 1
             date={date}
             enabledTimeSlot={enabledTimeSlot}
             handleDateChange={handleDateChange}
             setSelectedTime={setSelectedTime}
             timeSlots={timeSlots}
-            />:<UserFormInfo/>}
+            selectedTime={selectedTime}
+            />:<UserFormInfo //display if not on step 1
+            setUserName={setUserName}
+            setUserEmail={setUserEmail}
+            setUserNote={setUserNote}
+            />}
         </div>
-        <div className='mb-16'>
-            <Button className='mt-10 float-right'
+        <div className='flex gap-3 justify-end'>
+            {step==2&&<Button variant="outline"
+            onClick={()=>setStep(1)}>Back</Button>}
+            {step==1? <Button className='mt-10 float-right'
             disabled={!selectedTime||!date}
             onClick={()=>setStep(step+1)}
-            >
-            {step==1?'Next':'Schedule Now'}</Button>
+            >Next</Button>:
+            <Button
+            disabled={!userName||!userEmail}
+            onClick={handleScheduleEvent}
+            >Schedule Now</Button>}
         </div>
     </div>
   )
