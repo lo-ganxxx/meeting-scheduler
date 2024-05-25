@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import TimeDateSelection from './TimeDateSelection'
 import UserFormInfo from './UserFormInfo'
-import { doc, getFirestore, setDoc } from 'firebase/firestore'
+import { collection, doc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
 import { app } from '@/config/FirebaseConfig'
 import { toast } from 'sonner'
 
@@ -19,6 +19,7 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
   const [enabledTimeSlot, setEnabledTimeSlot]=useState(false)
   const [selectedTime, setSelectedTime]=useState()
   const [step, setStep]=useState(1)
+  const [prevEventBooking, setPrevEventBooking]=useState([])
 
   const [userName, setUserName]=useState()
   const [userEmail, setUserEmail]=useState()
@@ -53,6 +54,7 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
         setDate(date)
         const day=format(date, 'EEEE') //using date-fns to format the date to just day in Monday, Tuesday, etc. formatting
         if(businessInfo?.daysAvailable?.[day]) { //returns true or false
+            getPrevEventBooking(date)
             setEnabledTimeSlot(true)
         }
         else {
@@ -97,6 +99,22 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
 
   }
 
+
+  // Used to fetch previous bookings for given event on the chosen date
+  const getPrevEventBooking=async(date_)=>{
+    const q=query(collection(db, "ScheduledMeeting"),
+        where("selectedDate", "==", date_), //sets a condition for the returned files
+        where("eventId", "==", meetingEventInfo.id))
+        //in this case, the scheduled meeting must be on the selected date, and be for the same meeting event
+
+        const querySnapshot=await getDocs(q)
+
+        querySnapshot.forEach((doc)=>{
+            console.log("--",doc.data())
+            setPrevEventBooking(prev=>[...prev, doc.data()]) //a list of all the meetings booked on that day
+        })
+  }
+
   return (
     <div className='p-5 py-10 shadow-lg m-5 border-t-8
     mx-10
@@ -131,6 +149,7 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
             setSelectedTime={setSelectedTime}
             timeSlots={timeSlots}
             selectedTime={selectedTime}
+            prevEventBooking={prevEventBooking}
             />:<UserFormInfo //display if not on step 1
             setUserName={setUserName}
             setUserEmail={setUserEmail}
