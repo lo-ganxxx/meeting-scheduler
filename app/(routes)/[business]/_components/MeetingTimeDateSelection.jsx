@@ -9,6 +9,10 @@ import UserFormInfo from './UserFormInfo'
 import { collection, doc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
 import { app } from '@/config/FirebaseConfig'
 import { toast } from 'sonner'
+import Plunk from '@plunk/node'
+import { render } from '@react-email/components'
+import Email from '@/emails'
+import { useRouter } from 'next/navigation'
 
 function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
 
@@ -25,7 +29,9 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
   const [userEmail, setUserEmail]=useState()
   const [userNote, setUserNote]=useState('')
 
+  const router=useRouter()
   const db=getFirestore(app)
+  const plunk = new Plunk(process.env.NEXT_PUBLIC_PLUNK_API_KEY)
 
   useEffect(()=>{
     meetingEventInfo?.duration&&createTimeSlot(meetingEventInfo?.duration) //returns available time slots for given duration
@@ -95,6 +101,7 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
         userNote:userNote
     }).then(resp=>{
         toast("Meeting scheduled successfully!")
+        sendEmail(userName)
     })
 
   }
@@ -113,6 +120,27 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
             console.log("--",doc.data())
             setPrevEventBooking(prev=>[...prev, doc.data()]) //a list of all the meetings booked on that day
         })
+  }
+
+  // Sends an email to user using the Plunk API
+  const sendEmail=(user)=>{
+    const emailHtml = render(<Email
+    businessName={businessInfo?.businessName}
+    date={format(date,'PPP').toString()}
+    duration={meetingEventInfo?.duration}
+    meetingTime={selectedTime}
+    meetingUrl={meetingEventInfo?.locationUrl}
+    userFirstName={user}
+    />)
+
+    plunk.emails.send({
+    to: userEmail,
+    subject: "Details about your scheduled meeting!",
+    body: emailHtml,
+    }).then(resp=>{
+        console.log(resp)
+        router.replace('/confirmation')
+    })
   }
 
   return (
