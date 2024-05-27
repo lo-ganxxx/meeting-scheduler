@@ -92,6 +92,8 @@ function MeetingTimeDateSelection({meetingEventInfo, businessInfo}) {
         businessEmail:businessInfo.email,
         selectedTime:selectedTime,
         selectedDate:date, //improvement to be made -- as date already stores time at 00:00:00, find a way to edit this date to have the selected time, rather than have it seperate!
+        formattedDate:format(date,'PPP'), //to display on screen
+        formattedTimeStamp:format(date,'t'), //formatted to help compare when meetings are
         duration:meetingEventInfo.duration,
         locationUrl:meetingEventInfo.locationUrl,
         eventId:meetingEventInfo.id,
