@@ -55,7 +55,7 @@ function MeetingEventList() {
     }
 
     const onCopyClick=(event)=>{
-        const meetingEventUrl=process.env.NEXT_PUBLIC_BASE_URL+'/'+businessInfo.businessName+'/'+event.id
+        const meetingEventUrl=process.env.NEXT_PUBLIC_BASE_URL+businessInfo.businessName+'/'+event.id
         navigator.clipboard.writeText(meetingEventUrl) //Copies to the users clipboard
         toast('Link copied to clipboard')
     }
