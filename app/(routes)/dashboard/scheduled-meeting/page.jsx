@@ -18,6 +18,7 @@ function ScheduledMeeting() {
     },[user])
 
     const getScheduledMeetings=async()=>{
+        setMeetingList([])
         const q=query(collection(db, "ScheduledMeeting"),
         where("businessEmail", "==", user?.email))
  
@@ -31,7 +32,15 @@ function ScheduledMeeting() {
     const filterMeetingList=(type)=>{
         if(type=="upcoming")
             {
-                return meetingList.filter((item)=>item.formattedTImeStamp>=format(new Date(), 't'))
+                return meetingList.filter((item)=>item.formattedTimeStamp>=format(new Date(), 't'))
+            }
+        else if(type=="previous")
+            {
+                return meetingList.filter((item)=>item.formattedTimeStamp<format(new Date(), 't'))
+            }
+        else //invalid meeting list type to filter
+            {
+                console.error("Invalid meeting list type to filter");
             }
     }
 
@@ -45,13 +54,15 @@ function ScheduledMeeting() {
                 <TabsTrigger value="previous">Previous</TabsTrigger>
             </TabsList>
             <TabsContent value="upcoming">
-                upcoming
                 <ScheduledMeetingList
-                meetingList={filterMeetingList('upcoming')}
+                meetingList={filterMeetingList("upcoming")}
                 />
             </TabsContent>
             <TabsContent value="previous">
                 previous
+                <ScheduledMeetingList
+                meetingList={filterMeetingList("previous")}
+                />
             </TabsContent>
         </Tabs>
 

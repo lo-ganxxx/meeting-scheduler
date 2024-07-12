@@ -16,7 +16,7 @@ function SideNavBar() {
         },
         {
         id:2,
-        name:'Scheduled Meeting',
+        name:'Scheduled Meetings',
         path:'/dashboard/scheduled-meeting',
         icon:Calendar
         },
